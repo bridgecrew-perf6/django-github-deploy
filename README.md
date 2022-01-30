@@ -1,4 +1,19 @@
-## GitHub
+Continuous Deployment of Django to Digital Ocean with Docker and GitHub Actions
+===============================================================================
+
+---
+
+## Goals
+
+1. Deploy Django to DigitalOcean with Docker
+2. Configure GitHub actions to continuously deploy Django to DigitalOcean
+3. Use GitHub Packages to store Docker Images
+4. Set up Passwordless SSH Login
+5. Configure DigitalOcean's Managed Databases for data persistence
+
+---
+
+## GitHub Auth
 
 ### Create a GitHub Personal Access Token
 
@@ -7,6 +22,10 @@ With these permissions:
 1. write:packages
 2. read:packages
 3. delete:packages
+
+---
+
+## Setup GitHub Packages
 
 ### Build and tag the image
 
@@ -36,13 +55,12 @@ https://github.com/<USERNAME>?tab=packages
 
 ---
 
-## Digital Ocean
+## Setup Droplet
 
 ### Create a DigitalOcean API Access Token
 
-Add it to environment
-
 ```shell
+# Add it to your local environment
 export DIGITAL_OCEAN_ACCESS_TOKEN=[your_digital_ocean_token]
 ```
 
@@ -56,23 +74,27 @@ curl -X POST \
     "https://api.digitalocean.com/v2/droplets"
 ```
 
-### Check the Status
+---
+
+## Server SSH Auth
+
+### SSH Access on Server
+
+The root password should be emailed to you.
 
 ```shell
-curl \
-    -H 'Content-Type: application/json' \
-    -H 'Authorization: Bearer '$DIGITAL_OCEAN_ACCESS_TOKEN'' \
-    "https://api.digitalocean.com/v2/droplets?name=django-docker"
-```
-
-### Set up SSH Access on Server
-
-```shell
+# SSH into server
 ssh-keygen -t rsa
 # Copy your public key to this file
 nano ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/id_rsa
+```
+
+### Create a Directory for the app
+
+```shell
+ssh -o StrictHostKeyChecking=no root@<YOUR_INSTANCE_IP> mkdir /app
 ```
 
 ---
@@ -92,9 +114,35 @@ curl -X POST \
 ### Get the Connection Information
 
 ```shell
+# The 'jq' at the end can be installed from homebrew (pretty prints JSON)
 curl \
     -H 'Content-Type: application/json' \
     -H 'Authorization: Bearer '$DIGITAL_OCEAN_ACCESS_TOKEN'' \
     "https://api.digitalocean.com/v2/databases?name=django-docker-db" \
   | jq '.databases[0].connection'
 ```
+
+---
+
+## GitHub Actions
+
+## Add the '.github' directory as shown in this repo
+
+## Add Secrets to GitHub repo Secrets
+
+```shell
+# For example:
+SECRET_KEY: 9zYGEFk2mn3mWB8Bmg9SAhPy6F4s7cCuT8qaYGVEnu7huGRKW9
+SQL_DATABASE: defaultdb
+SQL_HOST: django-docker-db-do-user-778274-0.a.db.ondigitalocean.com
+SQL_PORT: 25060
+SQL_USER: doadmin
+SQL_PASSWORD: v60qcyaito1i0h66
+NAMESPACE: Github username/org name 
+PERSONAL_ACCESS_TOKEN: Github personal access token
+DIGITAL_OCEAN_IP_ADDRESS: IP of droplet
+```
+
+## Allowed Hosts
+
+Add droplet IP to Django allowed hosts in settings
