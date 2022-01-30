@@ -25,36 +25,6 @@ With these permissions:
 
 ---
 
-## Setup GitHub Packages
-
-### Build and tag the image
-
-```shell
-docker build -f app/Dockerfile -t ghcr.io/GITHUB_USERNAME/GITHUB_REPO/web:latest ./app
-```
-
-### Authenticate to GitHub Packages with Docker
-
-```shell
-docker login ghcr.io -u GITHUB_USERNAME -p GITHUB_TOKEN
-```
-
-### Push the image to the Container registry on GitHub Packages:
-
-```shell
-docker push ghcr.io/GITHUB_USERNAME/GITHUB_REPO/web:latest
-```
-
-### The package should now be on GitHub packages
-
-Organisation:
-https://github.com/orgs/<USERNAME>/packages
-
-Personal:
-https://github.com/<USERNAME>?tab=packages
-
----
-
 ## Setup Droplet
 
 ### Create a DigitalOcean API Access Token
@@ -80,21 +50,30 @@ curl -X POST \
 
 ### SSH Access on Server
 
-The root password should be emailed to you.
+The root password should be emailed to you. SSH into server.
+
+### Disable password auth
 
 ```shell
-# SSH into server
-ssh-keygen -t rsa
-# Copy your public key to this file
+nano /etc/ssh/sshd_config
+
+# Set these values to no
+PasswordAuthentication no
+UsePAM no
+ChallengeResponseAuthentication no
+systemctl reload ssh
+```
+
+### Add your public key to authorized keys
+
+```shell
 nano ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/id_rsa
 ```
 
 ### Create a Directory for the app
 
 ```shell
-ssh -o StrictHostKeyChecking=no root@<YOUR_INSTANCE_IP> mkdir /app
+ssh root@<YOUR_INSTANCE_IP> mkdir /app
 ```
 
 ---
@@ -126,23 +105,32 @@ curl \
 
 ## GitHub Actions
 
-## Add the '.github' directory as shown in this repo
+### Add the '.github' + workflow (like in the root of this repo)
 
-## Add Secrets to GitHub repo Secrets
+### Add Secrets to GitHub repo Secrets
 
 ```shell
 # For example:
-SECRET_KEY: 9zYGEFk2mn3mWB8Bmg9SAhPy6F4s7cCuT8qaYGVEnu7huGRKW9
-SQL_DATABASE: defaultdb
-SQL_HOST: django-docker-db-do-user-778274-0.a.db.ondigitalocean.com
-SQL_PORT: 25060
-SQL_USER: doadmin
-SQL_PASSWORD: v60qcyaito1i0h66
-NAMESPACE: Github username/org name 
-PERSONAL_ACCESS_TOKEN: Github personal access token
-DIGITAL_OCEAN_IP_ADDRESS: IP of droplet
+SECRET_KEY=9zYGEFk2mn3mWB8Bmg9SAhPy6F4s7cCuT8qaYGVEnu7huGRKW9
+SQL_DATABASE=defaultdb
+SQL_HOST=django-docker-db-do-user-778274-0.a.db.ondigitalocean.com
+SQL_PORT=25060
+SQL_USER=doadmin
+SQL_PASSWORD=v60qcyaito1i0h66
+NAMESPACE=github_username_or_organisation # Found in the repo URL 
+PERSONAL_ACCESS_TOKEN=github_token
+DIGITAL_OCEAN_IP_ADDRESS=droplet_ip
+PRIVATE_KEY=ssh_private_key_for_droplet
 ```
 
-## Allowed Hosts
+---
+
+## Deploy
+
+### Allowed Hosts
 
 Add droplet IP to Django allowed hosts in settings
+
+### Deploy code
+
+Merge the code to be deployed into 'main' and push
