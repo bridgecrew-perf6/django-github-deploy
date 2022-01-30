@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = int(os.environ.get('DEBUG', default=0))
 
 ALLOWED_HOSTS = [
-    '143.198.99.0',  # Digital Ocean
+    '143.198.109.183',  # Digital Ocean
     'localhost',
     '127.0.0.1'
 ]
